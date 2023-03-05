@@ -1,30 +1,55 @@
-import SwiftUI
+import Foundation
 import Flutter
-import FlutterPluginRegistrant
 
-class AppDelegate: FlutterAppDelegate, ObservableObject {
-  let flutterEngine = FlutterEngine(name: "my flutter engine")
+class AppDelegate: UIResponder, UIApplicationDelegate, FlutterAppLifeCycleProvider, ObservableObject {
 
-  override func application(
-    _ application: UIApplication,
-    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-      // Runs the default Dart entrypoint with a default Flutter route.
-      flutterEngine.run();
-      // Used to connect plugins (only if you have plugins with iOS platform code).
-      GeneratedPluginRegistrant.register(with: self.flutterEngine);
-      return true;
-    }
-}
+  private let lifecycleDelegate = FlutterPluginAppLifeCycleDelegate()
 
-@main
-struct MyApp: App {
-//  Use this property wrapper to tell SwiftUI
-//  it should use the AppDelegate class for the application delegate
-  @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+  let flutterEngine = FlutterEngine(name: "flutter_nps_engine")
 
-  var body: some Scene {
-      WindowGroup {
-        ContentView()
-      }
+  override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+  func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+    flutterEngine.run()
+    return lifecycleDelegate.application(application, didFinishLaunchingWithOptions: launchOptions ?? [:])
+  }
+
+  func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+    lifecycleDelegate.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
+  }
+
+  func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+    lifecycleDelegate.application(application, didFailToRegisterForRemoteNotificationsWithError: error)
+  }
+
+  func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+    lifecycleDelegate.application(application, didReceiveRemoteNotification: userInfo, fetchCompletionHandler: completionHandler)
+  }
+
+  func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+    return lifecycleDelegate.application(app, open: url, options: options)
+  }
+
+  func application(_ application: UIApplication, handleOpen url: URL) -> Bool {
+    return lifecycleDelegate.application(application, handleOpen: url)
+  }
+
+  func application(_ application: UIApplication, open url: URL, sourceApplication: String?, annotation: Any) -> Bool {
+    return lifecycleDelegate.application(application, open: url, sourceApplication: sourceApplication ?? "", annotation: annotation)
+  }
+
+  func application(_ application: UIApplication, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
+    lifecycleDelegate.application(application, performActionFor: shortcutItem, completionHandler: completionHandler)
+  }
+
+  func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
+    lifecycleDelegate.application(application, handleEventsForBackgroundURLSession: identifier, completionHandler: completionHandler)
+  }
+
+  func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+    lifecycleDelegate.application(application, performFetchWithCompletionHandler: completionHandler)
+  }
+
+  func add(_ delegate: FlutterApplicationLifeCycleDelegate) {
+    lifecycleDelegate.add(delegate)
   }
 }
