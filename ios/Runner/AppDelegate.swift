@@ -1,55 +1,34 @@
-import Foundation
+import SwiftUI
 import Flutter
 
-class AppDelegate: UIResponder, UIApplicationDelegate, FlutterAppLifeCycleProvider, ObservableObject {
+struct ContentView: View {
+  // Access the AppDelegate using an EnvironmentObject.
+  @EnvironmentObject var appDelegate: AppDelegate
 
-  private let lifecycleDelegate = FlutterPluginAppLifeCycleDelegate()
-
-  let flutterEngine = FlutterEngine(name: "flutter_nps_engine")
-
-  override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-  func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-    flutterEngine.run()
-    return lifecycleDelegate.application(application, didFinishLaunchingWithOptions: launchOptions ?? [:])
+  var body: some View {
+    Button("Show Flutter!") {
+      openFlutterApp()
+    }
   }
 
-  func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-    lifecycleDelegate.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
-  }
+func openFlutterApp() {
+    // Get the RootViewController.
+    guard
+      let windowScene = UIApplication.shared.connectedScenes
+        .first(where: { $0.activationState == .foregroundActive && $0 is UIWindowScene }) as? UIWindowScene,
+      let window = windowScene.windows.first(where: \.isKeyWindow),
+      let rootViewController = window.rootViewController
+    else { return }
 
-  func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-    lifecycleDelegate.application(application, didFailToRegisterForRemoteNotificationsWithError: error)
-  }
+    // Create the FlutterViewController.
+    let flutterViewController = FlutterViewController(
+      // Access the Flutter Engine via AppDelegate.
+      engine: appDelegate.flutterEngine,
+      nibName: nil,
+      bundle: nil)
+    flutterViewController.modalPresentationStyle = .overCurrentContext
+    flutterViewController.isViewOpaque = false
 
-  func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-    lifecycleDelegate.application(application, didReceiveRemoteNotification: userInfo, fetchCompletionHandler: completionHandler)
-  }
-
-  func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-    return lifecycleDelegate.application(app, open: url, options: options)
-  }
-
-  func application(_ application: UIApplication, handleOpen url: URL) -> Bool {
-    return lifecycleDelegate.application(application, handleOpen: url)
-  }
-
-  func application(_ application: UIApplication, open url: URL, sourceApplication: String?, annotation: Any) -> Bool {
-    return lifecycleDelegate.application(application, open: url, sourceApplication: sourceApplication ?? "", annotation: annotation)
-  }
-
-  func application(_ application: UIApplication, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
-    lifecycleDelegate.application(application, performActionFor: shortcutItem, completionHandler: completionHandler)
-  }
-
-  func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
-    lifecycleDelegate.application(application, handleEventsForBackgroundURLSession: identifier, completionHandler: completionHandler)
-  }
-
-  func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-    lifecycleDelegate.application(application, performFetchWithCompletionHandler: completionHandler)
-  }
-
-  func add(_ delegate: FlutterApplicationLifeCycleDelegate) {
-    lifecycleDelegate.add(delegate)
+    rootViewController.present(flutterViewController, animated: true)
   }
 }
